@@ -17,8 +17,7 @@ Crea una web que mostri, a partir de l'API de Jsonplaceholder:
 
 ### Exercici 1.3 Publicacions publicades
 - Mostra els darrers 5 post publicats per l'usuari i el nombre de comentaris que té cada post.
-  
-  ![alt text](image-1.png)
+- 
 ## Exercicis amb Async/await
 
 ### Exercici 1.4 Comentaris
