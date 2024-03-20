@@ -1,3 +1,9 @@
+// Función para limpiar las fichas de los pokémons
+function clearPokemon() {
+  const pokeCardsContainer = document.getElementById("pokeCards");
+  pokeCardsContainer.innerHTML = ""; // Limpiar el contenido
+}
+
 //Exercici 2.1 Async/await
 // Crea una funció que faci una petició a la api 'pokeapi' (fent servir async/await) i que retorni un array amb la informació dels 12 primers pokemons en forma d'objectes. Per tant, les peticions no es faran en cascada.
 // Mostra al costat del botó el temps que s'ha fet servir.
@@ -32,6 +38,10 @@ async function pokeCards() {
 
     // Mostrar los pokémons en pantalla
     displayPokemon(pokemonArray);
+    // Eliminar las fichas después de 5 segundos
+    setTimeout(() => {
+      clearPokemon();
+    }, 5000);
   } catch (error) {
     console.error("There was a problem with the fetch operation:", error);
   } finally {
@@ -142,6 +152,11 @@ function fetchPokemon() {
     })
     .then((pokemonArray) => {
       displayPokemon(pokemonArray);
+
+      // Borrar las fichas después de cierto tiempo (por ejemplo, 5 segundos)
+      setTimeout(() => {
+        clearPokemon();
+      }, 5000); // 5000 milisegundos = 5 segundos
     })
     .catch((error) => {
       console.error("There was a problem with the fetch operation:", error);
@@ -163,3 +178,65 @@ document.querySelector(".btn-success").addEventListener("click", fetchPokemon);
 // Utilitza Promise.all, de manera que les dades es mostrin per pantalla una vegada s'han resolt totes les peticions.
 // Mostra el temps total que ha trigat.
 // Actualitza la lògica perquè en prémer el botó corresponent es cridi aquesta funció i es mostri per pantalla els pokemons de l'array obtingut.
+function fetchPokeballParade() {
+  const pokeCardsContainer = document.getElementById("pokeCards");
+  pokeCardsContainer.innerHTML = ""; // Limpiar el contenido previo
+
+  const startTime = new Date().getTime(); // Tiempo de inicio
+
+  fetch("https://pokeapi.co/api/v2/pokemon")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      const pokemonList = data.results.slice(0, 12); // Obtiene los primeros 12 pokémones
+      const pokemonPromises = [];
+
+      // Crear un array de promesas para todas las peticiones de Pokémon
+      pokemonList.forEach((pokemon) => {
+        pokemonPromises.push(fetch(pokemon.url)
+          .then((pokemonResponse) => {
+            if (!pokemonResponse.ok) {
+              throw new Error("Network response for pokemon was not ok");
+            }
+            return pokemonResponse.json();
+          })
+          .then((pokemonData) => ({
+            name: pokemonData.name,
+            id: pokemonData.id,
+            types: pokemonData.types.map((tipo) => tipo.type.name),
+            weight: pokemonData.weight,
+            height: pokemonData.height,
+          }))
+        );
+      });
+
+      // Esperar a que todas las promesas se resuelvan
+      return Promise.all(pokemonPromises);
+    })
+    .then((pokemonArray) => {
+      // Mostrar los Pokémon en pantalla una vez se han resuelto todas las peticiones
+      displayPokemon(pokemonArray);
+      // Borrar las fichas después de cierto tiempo (por ejemplo, 5 segundos)
+      setTimeout(() => {
+        clearPokemon();
+      }, 5000); // 5000 milisegundos = 5 segundos
+
+      // Calcular el tiempo total transcurrido
+      const endTime = new Date().getTime();
+      const elapsedTime = endTime - startTime;
+      const timeText = `TIEMPO: ${elapsedTime.toFixed(2)} milisegundos`;
+
+      // Actualizar el texto del botón
+      const button = document.querySelector(".btn-warning");
+      button.textContent = `Exercici 2.3 ${timeText}`;
+    })
+    .catch((error) => {
+      console.error("There was a problem with the fetch operation:", error);
+    });
+}
+
+document.querySelector(".btn-warning").addEventListener("click", fetchPokeballParade);
